@@ -1,0 +1,16 @@
+{
+  "name": "binance-long-monitor",
+  "version": "0.1.0",
+  "description": "Monitor Binance USD-M perpetuals for risk-defined long-only recovery setups.",
+  "author": { "name": "auto-short contributors" },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Binance Long Monitor",
+    "shortDescription": "Find long-only USD-M recovery setups.",
+    "longDescription": "Scans public Binance USD-M market data every minute and reports only risk-defined long recovery candidates.",
+    "developerName": "auto-short contributors",
+    "category": "Finance",
+    "capabilities": [],
+    "defaultPrompt": "Run the Binance long monitor and summarize any ENTRY_READY or WATCH candidates in Korean."
+  }
+}
