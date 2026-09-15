@@ -1,0 +1,17 @@
+# KT 위즈 치어리더 영상용 클립 구간 예시
+# 영상: https://www.youtube.com/watch?v=sxVqcCslnAE
+# 실제 타임스탬프는 영상을 보고 수정하세요.
+
+clips:
+  - start: "0:00"
+    end: "0:25"
+    title: "오프닝"
+  - start: "0:25"
+    end: "0:50"
+    title: "메인 퍼포먼스 1"
+  - start: "0:50"
+    end: "1:15"
+    title: "메인 퍼포먼스 2"
+  - start: "1:15"
+    end: "1:40"
+    title: "하이라이트"
