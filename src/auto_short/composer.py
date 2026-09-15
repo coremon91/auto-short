@@ -88,13 +88,20 @@ def _normalize_clip(
     height: int,
     fps: int,
     max_duration: float,
+    focus_x: float | None = None,
+    focus_y: float | None = None,
 ) -> float:
-    """Center-crop to 9:16 and normalize codec/timebase."""
+    """Crop to 9:16 (optionally focused on a person) and normalize codec/timebase."""
     duration = min(probe_duration(src), max_duration)
-    filter_complex = (
-        f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-        f"crop={width}:{height},fps={fps},setsar=1,"
-        f"format=yuv420p"
+    # Crop in source aspect first, then scale. focus_x/y are 0..1 of source frame.
+    fx = 0.5 if focus_x is None else max(0.0, min(1.0, focus_x))
+    fy = 0.45 if focus_y is None else max(0.0, min(1.0, focus_y))
+    # ow/oh are available inside crop x/y expressions.
+    crop_expr = (
+        f"crop=min(iw\\,ih*9/16):min(ih\\,iw*16/9):"
+        f"max(0\\,min(iw-ow\\,{fx:.6f}*iw-ow/2)):"
+        f"max(0\\,min(ih-oh\\,{fy:.6f}*ih-oh/2)),"
+        f"scale={width}:{height}:flags=lanczos,fps={fps},setsar=1,format=yuv420p"
     )
     cmd = [
         ffmpeg,
@@ -104,7 +111,7 @@ def _normalize_clip(
         "-t",
         f"{duration:.3f}",
         "-vf",
-        filter_complex,
+        crop_expr,
         "-an",
         *_encode_args(),
         str(dst),
@@ -202,6 +209,8 @@ def compose_short(
     highlight_title: str,
     output_dir: Path,
     max_duration_sec: float | None = None,
+    focus_x: float | None = None,
+    focus_y: float | None = None,
 ) -> ComposeResult:
     if not clips:
         raise ComposeError("클립이 하나 이상 필요합니다.")
@@ -238,6 +247,8 @@ def compose_short(
                 height=defaults.height,
                 fps=defaults.fps,
                 max_duration=remaining,
+                focus_x=focus_x,
+                focus_y=focus_y,
             )
             normalized.append(out)
             remaining -= used
@@ -276,6 +287,8 @@ def compose_short(
                 "video": str(final_path),
                 "duration_sec": duration,
                 "source_clips": [str(c) for c in clips],
+                "focus_x": focus_x,
+                "focus_y": focus_y,
             },
             ensure_ascii=False,
             indent=2,

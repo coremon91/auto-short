@@ -13,6 +13,11 @@ from auto_short.cutter import (
     parse_clip_range,
     split_every,
 )
+from auto_short.people import (
+    PeopleError,
+    draw_debug_overlay,
+    resolve_people_focuses,
+)
 from auto_short.sample_clips import generate_sample_clip
 from auto_short.teams import load_catalog
 from auto_short.youtube_source import YoutubeError, download_youtube
@@ -128,6 +133,41 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     yt_p.add_argument("--min-clip", type=float, default=4.0)
     yt_p.add_argument("--max-duration", type=float, default=None)
     yt_p.set_defaults(func=cmd_from_youtube)
+
+    people_p = sub.add_parser(
+        "people",
+        help="가로로 나란한 인물을 1명씩 세로 쇼츠로 분할",
+    )
+    people_p.add_argument("--team", required=True, help="구단 ID")
+    people_p.add_argument("--video", type=Path, required=True, help="원본 영상")
+    people_p.add_argument("--count", type=int, default=4, help="인원 수 (기본 4)")
+    people_p.add_argument(
+        "--mode",
+        choices=("auto", "face", "equal"),
+        default="equal",
+        help="equal=균등 분할(추천), face=얼굴감지, auto=감지 실패시 균등",
+    )
+    people_p.add_argument(
+        "--sample-time",
+        type=float,
+        default=None,
+        help="얼굴 감지용 샘플 시각(초)",
+    )
+    people_p.add_argument(
+        "--clip",
+        default=None,
+        help="사용할 구간 START-END (예: 0:00-0:25). 없으면 영상 앞부분",
+    )
+    people_p.add_argument("--title", default="치어리더 쇼츠", help="공통 제목 prefix")
+    people_p.add_argument("--out", type=Path, default=Path("output"))
+    people_p.add_argument("--work-dir", type=Path, default=Path("samples/people"))
+    people_p.add_argument("--max-duration", type=float, default=None)
+    people_p.add_argument(
+        "--preview",
+        action="store_true",
+        help="감지/분할 기준선을 preview.jpg로 저장",
+    )
+    people_p.set_defaults(func=cmd_people)
 
     return parser.parse_args(argv)
 
@@ -336,6 +376,74 @@ def cmd_from_youtube(args: argparse.Namespace) -> int:
         print(f"파일: {dl.path}")
         return _render_clip_shorts(args, dl.path)
     except (YoutubeError, CutError, ComposeError, KeyError) as exc:
+        print(f"오류: {exc}", file=sys.stderr)
+        return 1
+
+
+def cmd_people(args: argparse.Namespace) -> int:
+    if not args.video.exists():
+        print(f"오류: 영상이 없습니다: {args.video}", file=sys.stderr)
+        return 1
+    try:
+        catalog = load_catalog(args.config)
+        team = catalog.get(args.team)
+        work = args.work_dir / team.id
+        work.mkdir(parents=True, exist_ok=True)
+
+        # Optional time trim first (same clip for all people).
+        source = args.video
+        if args.clip:
+            spec = parse_clip_range(args.clip)
+            source = work / "segment.mp4"
+            print(f"구간 자르기: {spec.start_sec:.1f}s-{spec.end_sec:.1f}s")
+            cut_clip(args.video, source, spec)
+
+        focuses, frame_path = resolve_people_focuses(
+            source,
+            count=args.count,
+            sample_time=args.sample_time,
+            mode=args.mode,
+            work_dir=work,
+        )
+        print(f"원본: {source}")
+        print(f"인물 {len(focuses)}명 분할 모드={focuses[0].method}")
+        for person in focuses:
+            print(
+                f"  P{person.index}: focus_x={person.focus_x:.3f} "
+                f"focus_y={person.focus_y:.3f} ({person.method})"
+            )
+
+        if args.preview:
+            preview_src = frame_path
+            if preview_src is None:
+                from auto_short.people import extract_frame
+                from auto_short.composer import probe_duration as _probe
+
+                t = args.sample_time if args.sample_time is not None else min(1.0, _probe(source) / 2)
+                preview_src = work / "people_sample.jpg"
+                extract_frame(source, t, preview_src)
+            preview = draw_debug_overlay(preview_src, focuses, work / "preview.jpg")
+            print(f"미리보기: {preview}")
+
+        made = 0
+        for person in focuses:
+            title = f"{args.title} P{person.index}"
+            result = compose_short(
+                team,
+                catalog,
+                [source],
+                highlight_title=title,
+                output_dir=args.out,
+                max_duration_sec=args.max_duration,
+                focus_x=person.focus_x,
+                focus_y=person.focus_y,
+            )
+            print(f"  → {result.video_path.name} ({result.duration_sec:.1f}s)")
+            made += 1
+
+        print(f"완료: 인물별 쇼츠 {made}개 → {args.out}")
+        return 0
+    except (PeopleError, CutError, ComposeError, KeyError) as exc:
         print(f"오류: {exc}", file=sys.stderr)
         return 1
 

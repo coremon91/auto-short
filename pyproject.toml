@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
   "PyYAML>=6.0",
   "yt-dlp>=2024.8.0",
+  "opencv-python-headless>=4.8",
 ]
 
 [project.optional-dependencies]

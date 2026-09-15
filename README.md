@@ -98,6 +98,24 @@ auto-short from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --te
 > YouTube가 봇 확인을 요구하면 `--cookies-from-browser chrome`(또는 `firefox`) /
 > `--cookies cookies.txt`가 필요합니다.
 
+### 인물별 세로 쇼츠 (4명이 나란히 있을 때)
+
+중앙 크롭은 두 사람 사이로 잘릴 수 있습니다. `people` 명령으로 1명씩 나눕니다.
+
+```powershell
+# 추천: 4등분 균등 분할
+py -m auto_short.cli people --team kt --video .\source.mp4 --count 4 --mode equal --preview
+
+# 특정 구간만
+py -m auto_short.cli people --team kt --video .\source.mp4 --count 4 --mode equal --clip "0:00-0:25" --preview
+
+# 얼굴 감지로 중심 잡기 (opencv 필요)
+py -m pip install opencv-python-headless
+py -m auto_short.cli people --team kt --video .\source.mp4 --count 4 --mode face --sample-time 5 --preview
+```
+
+`preview.jpg`에서 노란 선/박스가 각 인물 중심인지 확인한 뒤 결과(`output\`)를 쓰면 됩니다.
+
 ### 이미 받은 로컬 영상에서 자르기
 
 ```bash
