@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import shutil
 import subprocess
 from pathlib import Path
 
+from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg
 from auto_short.teams import Team
 
 
 def _require_ffmpeg() -> str:
-    path = shutil.which("ffmpeg")
-    if not path:
-        raise RuntimeError("ffmpeg가 필요합니다.")
-    return path
+    try:
+        return resolve_ffmpeg()
+    except FFmpegNotFound as exc:
+        raise RuntimeError(str(exc)) from exc
 
 
 def generate_sample_clip(

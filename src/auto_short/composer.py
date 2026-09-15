@@ -7,6 +7,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg, resolve_ffprobe
 from auto_short.metadata import build_description, build_output_stem, build_title
 from auto_short.teams import Team, TeamCatalog
 
@@ -25,15 +26,19 @@ class ComposeError(RuntimeError):
 
 
 def _require_ffmpeg() -> str:
-    path = shutil.which("ffmpeg")
-    if not path:
-        raise ComposeError("ffmpeg를 찾을 수 없습니다. ffmpeg를 설치해 주세요.")
-    return path
+    try:
+        return resolve_ffmpeg()
+    except FFmpegNotFound as exc:
+        raise ComposeError(str(exc)) from exc
 
 
 def probe_duration(path: Path) -> float:
+    try:
+        ffprobe = resolve_ffprobe()
+    except FFmpegNotFound as exc:
+        raise ComposeError(str(exc)) from exc
     cmd = [
-        "ffprobe",
+        ffprobe,
         "-v",
         "error",
         "-show_entries",

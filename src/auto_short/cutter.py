@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from auto_short.composer import probe_duration
+from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg
 
 
 class CutError(RuntimeError):
@@ -116,9 +116,10 @@ def detect_scene_clips(
     max_clips: int = 30,
 ) -> list[ClipSpec]:
     """장면 전환 지점을 기준으로 클립 후보를 만듭니다."""
-    ffmpeg = shutil.which("ffmpeg")
-    if not ffmpeg:
-        raise CutError("ffmpeg가 필요합니다.")
+    try:
+        ffmpeg = resolve_ffmpeg()
+    except FFmpegNotFound as exc:
+        raise CutError(str(exc)) from exc
 
     duration = probe_duration(video)
     cmd = [
@@ -177,9 +178,10 @@ def detect_scene_clips(
 
 
 def cut_clip(src: Path, dst: Path, clip: ClipSpec) -> Path:
-    ffmpeg = shutil.which("ffmpeg")
-    if not ffmpeg:
-        raise CutError("ffmpeg가 필요합니다.")
+    try:
+        ffmpeg = resolve_ffmpeg()
+    except FFmpegNotFound as exc:
+        raise CutError(str(exc)) from exc
     dst.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
         ffmpeg,
