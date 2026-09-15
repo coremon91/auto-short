@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from auto_short.cutter import load_clips_file, parse_clip_range, parse_timestamp, split_every
-from auto_short.youtube_source import extract_video_id
+from auto_short.youtube_source import _yt_dlp_cmd, extract_video_id
 
 
 def test_parse_timestamp_formats() -> None:
@@ -47,3 +47,9 @@ clips:
 def test_extract_video_id() -> None:
     assert extract_video_id("https://www.youtube.com/watch?v=sxVqcCslnAE") == "sxVqcCslnAE"
     assert extract_video_id("https://youtu.be/sxVqcCslnAE") == "sxVqcCslnAE"
+
+
+def test_yt_dlp_cmd_resolves() -> None:
+    cmd = _yt_dlp_cmd()
+    assert cmd
+    assert "yt-dlp" in cmd[0] or cmd[-1] == "yt_dlp"

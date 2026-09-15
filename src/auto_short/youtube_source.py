@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,12 +19,25 @@ class DownloadResult:
     title: str
 
 
-def _require_yt_dlp() -> str:
-    path = shutil.which("yt-dlp")
-    if path:
-        return path
+def _yt_dlp_cmd() -> list[str]:
+    """Return argv prefix for yt-dlp (binary or python -m)."""
+    for name in ("yt-dlp", "yt-dlp.exe"):
+        path = shutil.which(name)
+        if path:
+            return [path]
+
+    # Windows/pip often installs the module but not a PATH entry.
+    probe = subprocess.run(
+        [sys.executable, "-m", "yt_dlp", "--version"],
+        capture_output=True,
+        text=True,
+    )
+    if probe.returncode == 0:
+        return [sys.executable, "-m", "yt_dlp"]
+
     raise YoutubeError(
-        "yt-dlp가 필요합니다. `pip install yt-dlp` 후 다시 시도하세요."
+        "yt-dlp가 필요합니다. PowerShell에서 아래를 실행하세요:\n"
+        '  py -m pip install yt-dlp'
     )
 
 
@@ -48,13 +62,13 @@ def download_youtube(
     max_height: int = 1080,
 ) -> DownloadResult:
     """YouTube 영상을 로컬 파일로 받습니다."""
-    yt_dlp = _require_yt_dlp()
+    yt_dlp = _yt_dlp_cmd()
     video_id = extract_video_id(url)
     output_dir.mkdir(parents=True, exist_ok=True)
     out_tmpl = str(output_dir / f"{video_id}.%(ext)s")
 
     cmd = [
-        yt_dlp,
+        *yt_dlp,
         "--no-playlist",
         "--merge-output-format",
         "mp4",
