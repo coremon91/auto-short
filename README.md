@@ -15,6 +15,23 @@ KBO 구단별 하이라이트 **쇼츠(9:16)** 를 자동으로 만드는 CLI입
 
 ## 준비
 
+### Windows (PowerShell)
+
+1. [Python 3.11+](https://www.python.org/downloads/) 설치  
+   - 설치 화면에서 **Add python.exe to PATH** 체크
+2. [FFmpeg](https://www.gyan.dev/ffmpeg/builds/) 설치 후 PATH에 추가
+3. 저장소 받은 뒤 **프로젝트 폴더로 이동**해서 설치:
+
+```powershell
+cd C:\path\to\auto-short
+py -m pip install -e ".[dev]"
+```
+
+> `system32`에서 실행하지 마세요. `pip`/`auto-short`가 없다는 오류는 보통 PATH 미설정 또는 폴더 미이동입니다.  
+> PowerShell 줄바꿈은 `\`가 아니라 백틱 `` ` `` 입니다.
+
+### macOS / Linux
+
 ```bash
 python3 -m pip install -e ".[dev]"
 # ffmpeg, 한글 폰트(Nanum/Noto CJK) 필요
@@ -24,46 +41,58 @@ python3 -m pip install -e ".[dev]"
 
 ### 구단 목록
 
-```bash
+```powershell
 auto-short teams
+# 안 되면:
+py -m auto_short.cli teams
 ```
 
 ### YouTube에서 클립을 따서 쇼츠 만들기
 
 예: [2026 kt위즈 치어리더](https://www.youtube.com/watch?v=sxVqcCslnAE)
 
-**1) 원하는 구간을 직접 지정**
+**Windows PowerShell (한 줄로)**
 
-```bash
-auto-short from-youtube \
-  --url "https://www.youtube.com/watch?v=sxVqcCslnAE" \
-  --team kt \
-  --clip "0:00-0:25=오프닝" \
-  --clip "0:25-0:50=메인1" \
-  --clip "0:50-1:15=메인2" \
+```powershell
+cd C:\path\to\auto-short
+
+auto-short from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --team kt --clip "0:00-0:25=오프닝" --clip "0:25-0:50=메인1" --clip "0:50-1:15=메인2" --cookies-from-browser chrome
+```
+
+**또는 여러 줄 (백틱 `` ` `` 사용)**
+
+```powershell
+auto-short from-youtube `
+  --url "https://www.youtube.com/watch?v=sxVqcCslnAE" `
+  --team kt `
+  --clip "0:00-0:25=오프닝" `
+  --clip "0:25-0:50=메인1" `
+  --clip "0:50-1:15=메인2" `
   --cookies-from-browser chrome
 ```
 
-**2) YAML로 구간 관리**
+`auto-short`를 못 찾으면:
+
+```powershell
+py -m auto_short.cli from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --team kt --split-every 25 --cookies-from-browser chrome
+```
+
+**YAML로 구간 관리**
 
 `examples/kt-cheerleader-clips.yaml` 시간을 수정한 뒤:
 
-```bash
-auto-short from-youtube \
-  --url "https://www.youtube.com/watch?v=sxVqcCslnAE" \
-  --team kt \
-  --clips-file examples/kt-cheerleader-clips.yaml \
-  --cookies-from-browser chrome
+```powershell
+auto-short from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --team kt --clips-file examples/kt-cheerleader-clips.yaml --cookies-from-browser chrome
 ```
 
-**3) 자동 분할**
+**자동 분할**
 
-```bash
+```powershell
 # 25초마다 자르기
-auto-short from-youtube --url "..." --team kt --split-every 25 --cookies-from-browser chrome
+auto-short from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --team kt --split-every 25 --cookies-from-browser chrome
 
 # 장면 전환 기준
-auto-short from-youtube --url "..." --team kt --scenes --cookies-from-browser chrome
+auto-short from-youtube --url "https://www.youtube.com/watch?v=sxVqcCslnAE" --team kt --scenes --cookies-from-browser chrome
 ```
 
 > YouTube가 봇 확인을 요구하면 `--cookies-from-browser chrome`(또는 `firefox`) /
