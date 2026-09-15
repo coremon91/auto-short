@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg
+from auto_short.process_util import run_cmd
 from auto_short.teams import Team
 
 
@@ -53,7 +53,7 @@ def generate_sample_clip(
         str(duration_sec),
         str(path),
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = run_cmd(cmd)
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr[-2000:])
     return path

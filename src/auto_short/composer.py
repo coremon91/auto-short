@@ -9,6 +9,7 @@ from pathlib import Path
 
 from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg, resolve_ffprobe
 from auto_short.metadata import build_description, build_output_stem, build_title
+from auto_short.process_util import check_output_cmd, run_cmd
 from auto_short.teams import Team, TeamCatalog
 
 
@@ -48,7 +49,7 @@ def probe_duration(path: Path) -> float:
         str(path),
     ]
     try:
-        raw = subprocess.check_output(cmd, text=True)
+        raw = check_output_cmd(cmd)
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         raise ComposeError(f"영상 길이를 읽을 수 없습니다: {path}") from exc
     data = json.loads(raw)
@@ -185,7 +186,7 @@ def _overlay_branding(
 
 
 def _run(cmd: list[str], *, label: str) -> None:
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = run_cmd(cmd)
     if proc.returncode != 0:
         err = (proc.stderr or proc.stdout or "").strip().splitlines()[-20:]
         raise ComposeError(f"{label} 실패\n" + "\n".join(err))

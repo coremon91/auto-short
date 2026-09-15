@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,6 +8,7 @@ import yaml
 
 from auto_short.composer import probe_duration
 from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg
+from auto_short.process_util import run_cmd
 
 
 class CutError(RuntimeError):
@@ -132,7 +132,7 @@ def detect_scene_clips(
         "null",
         "-",
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = run_cmd(cmd)
     # scene timestamps appear on stderr via showinfo
     times = [0.0]
     for line in (proc.stderr or "").splitlines():
@@ -204,7 +204,7 @@ def cut_clip(src: Path, dst: Path, clip: ClipSpec) -> Path:
         "+faststart",
         str(dst),
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = run_cmd(cmd)
     if proc.returncode != 0:
         raise CutError(
             "클립 자르기 실패\n" + "\n".join((proc.stderr or "").strip().splitlines()[-20:])

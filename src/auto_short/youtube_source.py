@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import re
 import shutil
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from auto_short.process_util import run_cmd
 
 
 class YoutubeError(RuntimeError):
@@ -27,11 +28,7 @@ def _yt_dlp_cmd() -> list[str]:
             return [path]
 
     # Windows/pip often installs the module but not a PATH entry.
-    probe = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--version"],
-        capture_output=True,
-        text=True,
-    )
+    probe = run_cmd([sys.executable, "-m", "yt_dlp", "--version"])
     if probe.returncode == 0:
         return [sys.executable, "-m", "yt_dlp"]
 
@@ -94,7 +91,7 @@ def download_youtube(
         cmd.extend(["--js-runtimes", "node"])
 
     cmd.append(url)
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = run_cmd(cmd)
     if proc.returncode != 0:
         err = (proc.stderr or proc.stdout or "").strip()
         hint = ""
