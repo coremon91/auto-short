@@ -183,25 +183,21 @@ def cut_clip(src: Path, dst: Path, clip: ClipSpec) -> Path:
     except FFmpegNotFound as exc:
         raise CutError(str(exc)) from exc
     dst.parent.mkdir(parents=True, exist_ok=True)
+    # Stream copy avoids needing libx264/preset (DeckLink-only builds etc.)
+    duration = max(0.1, clip.end_sec - clip.start_sec)
     cmd = [
         ffmpeg,
         "-y",
         "-ss",
         f"{clip.start_sec:.3f}",
-        "-to",
-        f"{clip.end_sec:.3f}",
         "-i",
         str(src),
-        "-c:v",
-        "libx264",
-        "-preset",
-        "veryfast",
-        "-crf",
-        "20",
-        "-c:a",
-        "aac",
-        "-movflags",
-        "+faststart",
+        "-t",
+        f"{duration:.3f}",
+        "-c",
+        "copy",
+        "-avoid_negative_ts",
+        "make_zero",
         str(dst),
     ]
     proc = run_cmd(cmd)

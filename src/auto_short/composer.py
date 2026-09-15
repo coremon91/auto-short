@@ -7,7 +7,13 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from auto_short.ffmpeg_util import FFmpegNotFound, resolve_ffmpeg, resolve_ffprobe
+from auto_short.ffmpeg_util import (
+    FFmpegNotFound,
+    has_drawtext,
+    resolve_ffmpeg,
+    resolve_ffprobe,
+    video_encode_args,
+)
 from auto_short.metadata import build_description, build_output_stem, build_title
 from auto_short.process_util import check_output_cmd, run_cmd
 from auto_short.teams import Team, TeamCatalog
@@ -29,6 +35,13 @@ class ComposeError(RuntimeError):
 def _require_ffmpeg() -> str:
     try:
         return resolve_ffmpeg()
+    except FFmpegNotFound as exc:
+        raise ComposeError(str(exc)) from exc
+
+
+def _encode_args() -> list[str]:
+    try:
+        return video_encode_args(crf=20)
     except FFmpegNotFound as exc:
         raise ComposeError(str(exc)) from exc
 
@@ -93,14 +106,7 @@ def _normalize_clip(
         "-vf",
         filter_complex,
         "-an",
-        "-c:v",
-        "libx264",
-        "-preset",
-        "veryfast",
-        "-crf",
-        "20",
-        "-pix_fmt",
-        "yuv420p",
+        *_encode_args(),
         str(dst),
     ]
     _run(cmd, label=f"normalize {src.name}")
@@ -141,26 +147,29 @@ def _overlay_branding(
     width: int,
     height: int,
 ) -> None:
-    font_path = Path(font)
-    if not font_path.exists():
-        raise ComposeError(f"폰트 파일이 없습니다: {font}")
-
     team_label = _escape_drawtext(team.name_ko)
     title_label = _escape_drawtext(title)
     city_label = _escape_drawtext(team.city)
 
     # Top brand bar + bottom caption safe area with team colors.
-    vf = (
-        f"drawbox=x=0:y=0:w={width}:h=160:color=0x{team.primary_hex}@0.92:t=fill,"
-        f"drawbox=x=0:y={height - 280}:w={width}:h=280:color=0x{team.secondary_hex}@0.78:t=fill,"
-        f"drawbox=x=0:y=160:w={width}:h=8:color=0x{team.accent_hex}@0.95:t=fill,"
-        f"drawtext=fontfile='{font_path.as_posix()}':text='{team_label}':"
-        f"fontsize=54:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=48,"
-        f"drawtext=fontfile='{font_path.as_posix()}':text='{city_label}':"
-        f"fontsize=28:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=110,"
-        f"drawtext=fontfile='{font_path.as_posix()}':text='{title_label}':"
-        f"fontsize=42:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=h-180"
-    )
+    vf_parts = [
+        f"drawbox=x=0:y=0:w={width}:h=160:color=0x{team.primary_hex}@0.92:t=fill",
+        f"drawbox=x=0:y={height - 280}:w={width}:h=280:color=0x{team.secondary_hex}@0.78:t=fill",
+        f"drawbox=x=0:y=160:w={width}:h=8:color=0x{team.accent_hex}@0.95:t=fill",
+    ]
+    if has_drawtext() and Path(font).exists():
+        font_path = Path(font)
+        vf_parts.extend(
+            [
+                f"drawtext=fontfile='{font_path.as_posix()}':text='{team_label}':"
+                f"fontsize=54:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=48",
+                f"drawtext=fontfile='{font_path.as_posix()}':text='{city_label}':"
+                f"fontsize=28:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=110",
+                f"drawtext=fontfile='{font_path.as_posix()}':text='{title_label}':"
+                f"fontsize=42:fontcolor=0x{team.accent_hex}:x=(w-text_w)/2:y=h-180",
+            ]
+        )
+    vf = ",".join(vf_parts)
 
     cmd = [
         ffmpeg,
@@ -169,15 +178,8 @@ def _overlay_branding(
         str(src),
         "-vf",
         vf,
-        "-c:v",
-        "libx264",
-        "-preset",
-        "veryfast",
-        "-crf",
-        "20",
+        *_encode_args(),
         "-an",
-        "-pix_fmt",
-        "yuv420p",
         "-movflags",
         "+faststart",
         str(dst),
