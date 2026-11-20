@@ -20,7 +20,7 @@ The mock fixture is deterministic and is never a hardware pass. `hardware_pass` 
 
 and does not start a 4-channel record. That line is only the refusal of a 4-channel start. A missing second input does not block a 1-channel start, and one input is not copied into extra files.
 
-Config values outside the XDCAM HD422 target (1920x1080, 30000/1001, interlaced, top field first, yuv422p, 50 Mbps, PCM 48 kHz 8-channel 24-bit, `STOP_WITH_ERROR` or `KEEP_RECORDING_WITH_FLAG`) are rejected at startup. Preflight also checks that the output directory exists and is writable, that free space covers `min_free_bytes`, that two channels do not name the same input, and that a selected device is not busy or unable to open 8-channel audio.
+Config values outside the XDCAM HD422 target (1920x1080, 30000/1001, interlaced, top field first, yuv422p, 50 Mbps, PCM 48 kHz 8-channel 24-bit, `STOP_WITH_ERROR` or `KEEP_RECORDING_WITH_FLAG`) are rejected at startup. Preflight also checks that the output directory exists and is writable, that free space covers `min_free_bytes`, that two channels do not name the same input, and that each assigned input opened capture and 8-channel audio. Playback-side busy on a full-duplex input does not block that start when the capture probe already succeeded. A capture-busy input still refuses the start. An explicit channel list uses the same probe result as a scan-based assignment.
 
 ## Commands
 

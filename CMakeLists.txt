@@ -48,6 +48,7 @@ add_custom_command(
             kFixtureTwoInput "${CMAKE_SOURCE_DIR}/fixtures/two_input.json"
             kFixtureFourInput "${CMAKE_SOURCE_DIR}/fixtures/four_input.json"
             kFixtureBusy "${CMAKE_SOURCE_DIR}/fixtures/busy.json"
+            kFixturePlaybackBusy "${CMAKE_SOURCE_DIR}/fixtures/playback_busy.json"
             kFixtureNoAudio8ch "${CMAKE_SOURCE_DIR}/fixtures/no_audio_8ch.json"
     DEPENDS
         "${CMAKE_SOURCE_DIR}/cmake/embed_fixtures.py"
@@ -55,6 +56,7 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/fixtures/two_input.json"
         "${CMAKE_SOURCE_DIR}/fixtures/four_input.json"
         "${CMAKE_SOURCE_DIR}/fixtures/busy.json"
+        "${CMAKE_SOURCE_DIR}/fixtures/playback_busy.json"
         "${CMAKE_SOURCE_DIR}/fixtures/no_audio_8ch.json"
     VERBATIM)
 

@@ -53,6 +53,15 @@ bool AudioReady(const DeviceInfo& device) {
     return device.audio_8ch_supported && device.audio_8ch_openable && device.max_audio_channels >= 8;
 }
 
+bool CaptureOpened(const DeviceInfo& device) {
+    for (const InputInstanceInfo& input : device.inputs) {
+        if (input.subdevice_index == device.subdevice_index && input.simultaneous_capture_openable) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string ChannelIdForIndex(int index) { return "CH" + std::to_string(index + 1); }
 
 void CheckPath(const Config& config, PreflightResult& result) {
@@ -206,17 +215,14 @@ PreflightResult RunPreflight(const Config& config, const ScanResult& scan, std::
                 missing = true;
                 continue;
             }
-            if (device->in_use) {
-                busy = true;
-            }
-            bool openable_match = false;
-            for (const InputInstanceInfo& input : device->inputs) {
-                if (input.subdevice_index == device->subdevice_index && input.simultaneous_capture_openable) {
-                    openable_match = true;
+            // Playback or serial busy still sets in_use. A capture the probe already
+            // opened is the same input a scan-based assignment would use.
+            if (!CaptureOpened(*device)) {
+                if (device->in_use) {
+                    busy = true;
+                } else {
+                    closed = true;
                 }
-            }
-            if (!openable_match) {
-                closed = true;
             }
         }
         if (missing) {

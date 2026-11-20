@@ -338,6 +338,8 @@ void ReadAttributes(IDeckLink* device, DeviceInfo& info, bool& capture_busy) {
     if (device->QueryInterface(IID_IDeckLinkStatus, reinterpret_cast<void**>(status.Put())) == S_OK && status) {
         int64_t busy = 0;
         if (status->GetInt(bmdDeckLinkStatusBusy, &busy) == S_OK) {
+            // Any busy bit is reported. Only capture busy skips the open probe;
+            // playback on a full-duplex card can leave capture openable.
             info.in_use = busy != 0;
             std::vector<std::string> parts;
             if ((busy & bmdDeviceCaptureBusy) != 0) {

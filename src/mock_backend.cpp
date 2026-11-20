@@ -57,6 +57,8 @@ class MockBackend : public DeviceBackend {
                 built_in = kFixtureFourInput;
             } else if (name == "busy") {
                 built_in = kFixtureBusy;
+            } else if (name == "playback-busy") {
+                built_in = kFixturePlaybackBusy;
             } else if (name == "no-audio-8ch") {
                 built_in = kFixtureNoAudio8ch;
             }
@@ -118,6 +120,22 @@ std::string NeedBool(const Value& object, const char* key, bool& out) {
     }
     out = value->b;
     return {};
+}
+
+bool BusyDetailHas(const std::string& detail, const char* token) {
+    std::string::size_type start = 0;
+    while (start <= detail.size()) {
+        const std::string::size_type comma = detail.find(',', start);
+        const std::string part = detail.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+        if (part == token) {
+            return true;
+        }
+        if (comma == std::string::npos) {
+            break;
+        }
+        start = comma + 1;
+    }
+    return false;
 }
 
 std::string NeedStringList(const Value& object, const char* key, std::vector<std::string>& out) {
@@ -391,8 +409,8 @@ std::string ParseFixture(const std::string& text, ScanResult& result) {
                 return error;
             }
             input.streams_started = false;
-            if (device.in_use && input.simultaneous_capture_openable) {
-                return "fixture: an in-use device cannot be simultaneously openable";
+            if (device.in_use && input.simultaneous_capture_openable && BusyDetailHas(device.busy_detail, "capture")) {
+                return "fixture: a capture-busy device cannot be simultaneously openable";
             }
             if (input.simultaneous_capture_openable == false && device.audio_8ch_openable) {
                 return "fixture: audio_8ch_openable requires an openable input";

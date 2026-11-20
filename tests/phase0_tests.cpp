@@ -244,6 +244,60 @@ int main() {
     }
 
     {
+        const std::string named_busy =
+            ",\n  \"channels\": ["
+            "{\"id\":\"CH1\",\"persistent_id\":\"mock-sdi-busy\",\"subdevice_index\":0}]";
+        const xdcam::PreflightResult preflight = xdcam::RunPreflight(MustLoad(BaseConfig(dir, named_busy)), busy, std::nullopt);
+        CHECK(!preflight.start_allowed);
+        CHECK(!preflight.channel_count_ok);
+        CHECK(!preflight.four_channel_refused);
+        CHECK_EQ(preflight.files_planned, 0);
+        CHECK(preflight.assignments.empty());
+    }
+
+    {
+        const xdcam::ScanResult playback = MustScan("playback-busy");
+        CHECK_EQ(playback.independent_inputs, 1);
+        CHECK(playback.devices[0].in_use);
+        CHECK_EQ(playback.devices[0].busy_detail, "playback");
+        CHECK_EQ(playback.devices[0].duplex, "full");
+        CHECK(playback.devices[0].inputs[0].simultaneous_capture_openable);
+        CHECK(!playback.devices[0].inputs[0].streams_started);
+
+        const xdcam::PreflightResult implicit = xdcam::RunPreflight(MustLoad(BaseConfig(dir, "")), playback, std::nullopt);
+        CHECK(implicit.start_allowed);
+        CHECK(implicit.busy_ok);
+        CHECK_EQ(implicit.requested_channels, 1);
+        CHECK_EQ(implicit.channel_count_source, "scan");
+        CHECK_EQ(implicit.files_planned, 1);
+        CHECK_EQ(implicit.assignments.size(), 1u);
+
+        const std::string named =
+            ",\n  \"channels\": ["
+            "{\"id\":\"CH1\",\"persistent_id\":\"mock-sdi-playback\",\"subdevice_index\":0}]";
+        const xdcam::PreflightResult explicit_assign =
+            xdcam::RunPreflight(MustLoad(BaseConfig(dir, named)), playback, std::nullopt);
+        CHECK(explicit_assign.start_allowed);
+        CHECK(explicit_assign.busy_ok);
+        CHECK(explicit_assign.busy_detail.empty());
+        CHECK_EQ(explicit_assign.channel_count_source, "config_channels");
+        CHECK_EQ(explicit_assign.requested_channels, 1);
+        CHECK_EQ(explicit_assign.files_planned, 1);
+        CHECK_EQ(explicit_assign.assignments.size(), 1u);
+        CHECK_EQ(explicit_assign.assignments[0].id, "CH1");
+        CHECK_EQ(explicit_assign.assignments[0].persistent_id, "mock-sdi-playback");
+        CHECK(!explicit_assign.four_channel_refused);
+        const std::string text = xdcam::FormatReport(playback, run, &explicit_assign);
+        CHECK(ContainsLine(text, "start_allowed: true"));
+        CHECK(ContainsLine(text, "check_device_busy: pass"));
+        CHECK(ContainsLine(text, "in_use: true"));
+        CHECK(ContainsLine(text, "busy_detail: playback"));
+        CHECK(ContainsLine(text, "record_started: false"));
+        CHECK(ContainsLine(text, "capture_started: false"));
+        CHECK(text.find(kFourIndependentInputsRefusal) == std::string::npos);
+    }
+
+    {
         const xdcam::PreflightResult preflight = xdcam::RunPreflight(MustLoad(BaseConfig(dir, "")), no_audio, std::nullopt);
         CHECK(!preflight.start_allowed);
         CHECK(!preflight.audio_ok);
