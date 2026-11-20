@@ -1,0 +1,22 @@
+{
+  "backend": "mock",
+  "output_dir": "/tmp/xdcam-phase0",
+  "min_free_bytes": 1073741824,
+  "require_audio_8ch": true,
+  "on_signal_loss": "STOP_WITH_ERROR",
+  "video": {
+    "width": 1920,
+    "height": 1080,
+    "frame_rate_num": 30000,
+    "frame_rate_den": 1001,
+    "scan": "interlaced",
+    "field_order": "top_field_first",
+    "pixel_format": "yuv422p",
+    "bitrate_bps": 50000000
+  },
+  "audio": {
+    "sample_rate": 48000,
+    "channels_per_input": 8,
+    "format": "pcm_s24"
+  }
+}
