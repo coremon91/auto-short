@@ -1,0 +1,161 @@
+{
+  "notice": "deterministic mock fixture; not a DeckLink 4K Extreme result; not a hardware pass",
+  "devices": [
+    {
+      "display_name": "MOCK fixture input 1",
+      "persistent_id": "mock-sdi-0001",
+      "model_name": "MOCK-MULTI-1",
+      "device_interface": "pci",
+      "device_group_id": "mock-group-4",
+      "video_io": ["capture"],
+      "active_profile": "four_subdevices_half_duplex",
+      "profile_list": "four_subdevices_half_duplex",
+      "duplex": "half",
+      "in_use": false,
+      "input_connectors": ["sdi"],
+      "output_connectors": ["sdi"],
+      "active_input_connector": "sdi",
+      "audio_input": ["embedded"],
+      "max_audio_channels": 16,
+      "audio_8ch_supported": true,
+      "audio_8ch_openable": true,
+      "subdevice_index": 0,
+      "number_of_subdevices": 4,
+      "display_modes": [
+        {
+          "name": "1080i59.94",
+          "width": 1920,
+          "height": 1080,
+          "frame_rate_num": 30000,
+          "frame_rate_den": 1001,
+          "field_dominance": "upper_field_first",
+          "pixel_formats": ["8BitYUV", "10BitYUV"]
+        }
+      ],
+      "input_instances": [
+        {
+          "subdevice_index": 0,
+          "simultaneous_capture_openable": true,
+          "open_probe": "mock_open_ok_without_streams"
+        }
+      ]
+    },
+    {
+      "display_name": "MOCK fixture input 2",
+      "persistent_id": "mock-sdi-0002",
+      "model_name": "MOCK-MULTI-2",
+      "device_interface": "pci",
+      "device_group_id": "mock-group-4",
+      "video_io": ["capture"],
+      "active_profile": "four_subdevices_half_duplex",
+      "profile_list": "four_subdevices_half_duplex",
+      "duplex": "half",
+      "in_use": false,
+      "input_connectors": ["sdi"],
+      "output_connectors": ["sdi"],
+      "active_input_connector": "sdi",
+      "audio_input": ["embedded"],
+      "max_audio_channels": 16,
+      "audio_8ch_supported": true,
+      "audio_8ch_openable": true,
+      "subdevice_index": 1,
+      "number_of_subdevices": 4,
+      "display_modes": [
+        {
+          "name": "1080i59.94",
+          "width": 1920,
+          "height": 1080,
+          "frame_rate_num": 30000,
+          "frame_rate_den": 1001,
+          "field_dominance": "upper_field_first",
+          "pixel_formats": ["8BitYUV", "10BitYUV"]
+        }
+      ],
+      "input_instances": [
+        {
+          "subdevice_index": 1,
+          "simultaneous_capture_openable": true,
+          "open_probe": "mock_open_ok_without_streams"
+        }
+      ]
+    },
+    {
+      "display_name": "MOCK fixture input 3",
+      "persistent_id": "mock-sdi-0003",
+      "model_name": "MOCK-MULTI-3",
+      "device_interface": "pci",
+      "device_group_id": "mock-group-4",
+      "video_io": ["capture"],
+      "active_profile": "four_subdevices_half_duplex",
+      "profile_list": "four_subdevices_half_duplex",
+      "duplex": "half",
+      "in_use": false,
+      "input_connectors": ["sdi"],
+      "output_connectors": ["sdi"],
+      "active_input_connector": "sdi",
+      "audio_input": ["embedded"],
+      "max_audio_channels": 16,
+      "audio_8ch_supported": true,
+      "audio_8ch_openable": true,
+      "subdevice_index": 2,
+      "number_of_subdevices": 4,
+      "display_modes": [
+        {
+          "name": "1080i59.94",
+          "width": 1920,
+          "height": 1080,
+          "frame_rate_num": 30000,
+          "frame_rate_den": 1001,
+          "field_dominance": "upper_field_first",
+          "pixel_formats": ["8BitYUV", "10BitYUV"]
+        }
+      ],
+      "input_instances": [
+        {
+          "subdevice_index": 2,
+          "simultaneous_capture_openable": true,
+          "open_probe": "mock_open_ok_without_streams"
+        }
+      ]
+    },
+    {
+      "display_name": "MOCK fixture input 4",
+      "persistent_id": "mock-sdi-0004",
+      "model_name": "MOCK-MULTI-4",
+      "device_interface": "pci",
+      "device_group_id": "mock-group-4",
+      "video_io": ["capture"],
+      "active_profile": "four_subdevices_half_duplex",
+      "profile_list": "four_subdevices_half_duplex",
+      "duplex": "half",
+      "in_use": false,
+      "input_connectors": ["sdi"],
+      "output_connectors": ["sdi"],
+      "active_input_connector": "sdi",
+      "audio_input": ["embedded"],
+      "max_audio_channels": 16,
+      "audio_8ch_supported": true,
+      "audio_8ch_openable": true,
+      "subdevice_index": 3,
+      "number_of_subdevices": 4,
+      "display_modes": [
+        {
+          "name": "1080i59.94",
+          "width": 1920,
+          "height": 1080,
+          "frame_rate_num": 30000,
+          "frame_rate_den": 1001,
+          "field_dominance": "upper_field_first",
+          "pixel_formats": ["8BitYUV", "10BitYUV"]
+        }
+      ],
+      "input_instances": [
+        {
+          "subdevice_index": 3,
+          "simultaneous_capture_openable": true,
+          "open_probe": "mock_open_ok_without_streams"
+        }
+      ]
+    }
+  ]
+}

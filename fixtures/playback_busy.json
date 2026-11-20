@@ -1,0 +1,45 @@
+{
+  "notice": "deterministic mock fixture; not a DeckLink 4K Extreme result; not a hardware pass",
+  "devices": [
+    {
+      "display_name": "MOCK single-channel SDI I/O playback busy",
+      "persistent_id": "mock-sdi-playback",
+      "model_name": "MOCK-SDI-IO-1",
+      "device_interface": "pci",
+      "device_group_id": "mock-group-playback",
+      "video_io": ["capture", "playback"],
+      "active_profile": "one_subdevice_full_duplex",
+      "profile_list": "one_subdevice_full_duplex",
+      "duplex": "full",
+      "in_use": true,
+      "busy_detail": "playback",
+      "input_connectors": ["sdi"],
+      "output_connectors": ["sdi"],
+      "active_input_connector": "sdi",
+      "audio_input": ["embedded"],
+      "max_audio_channels": 16,
+      "audio_8ch_supported": true,
+      "audio_8ch_openable": true,
+      "subdevice_index": 0,
+      "number_of_subdevices": 1,
+      "display_modes": [
+        {
+          "name": "1080i59.94",
+          "width": 1920,
+          "height": 1080,
+          "frame_rate_num": 30000,
+          "frame_rate_den": 1001,
+          "field_dominance": "upper_field_first",
+          "pixel_formats": ["8BitYUV", "10BitYUV"]
+        }
+      ],
+      "input_instances": [
+        {
+          "subdevice_index": 0,
+          "simultaneous_capture_openable": true,
+          "open_probe": "mock_open_ok_without_streams"
+        }
+      ]
+    }
+  ]
+}
